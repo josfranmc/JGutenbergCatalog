@@ -1,0 +1,150 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.josfranmc.gutenberg</groupId>
+  <artifactId>JGutenbergCatalog</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+
+  <name>JGutenbergCatalog</name>
+  <description>Carga del catálogo de libros del proyecto Gutenberg en base de datos</description>
+  <url>http://maven.apache.org</url>
+
+  <developers>
+    <developer>
+      <name>Jose Francisco Mena Ceca</name>
+      <organization>org.josfranmc</organization>
+    </developer>
+  </developers>
+
+  <properties>
+    <junit.version>4.12</junit.version>
+    <log4j.version>1.2.17</log4j.version>
+    <jdk.target.version>1.8</jdk.target.version>
+    <jdk.source.version>1.8</jdk.source.version>
+    <maven.compiler.plugin.version>3.5.1</maven.compiler.plugin.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+        <groupId>org.hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>2.4.0</version>
+    </dependency>    
+  
+    <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-core -->
+    <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-core</artifactId>
+        <version>3.5.0</version>
+    </dependency>  
+    <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-arq -->
+    <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-arq</artifactId>
+        <version>3.5.0</version>
+    </dependency>    
+    
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>${log4j.version}</version>
+    </dependency> 
+    
+   <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-log4j12</artifactId>
+       <version>1.7.25</version>
+       <scope>test</scope>
+   </dependency> 
+ 
+     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.25</version>
+    </dependency> 
+    
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+      <finalName>JGutenbergCatalog</finalName>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>${maven.compiler.plugin.version}</version>
+              <configuration>
+                  <source>${jdk.source.version}</source>
+                  <target>${jdk.target.version}</target>
+                  <failOnMissingWebXml>false</failOnMissingWebXml>
+              </configuration>
+          </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+<!--                            <addClasspath>true</addClasspath> -->
+<!--                            <classpathPrefix>lib/</classpathPrefix> -->
+                            <mainClass>org.josfranmc.gutenberg.catalog.client.JGutenbergCatalogClient</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>   
+            
+<!--            <plugin> -->
+<!--                <groupId>org.apache.maven.plugins</groupId> -->
+<!--                <artifactId>maven-dependency-plugin</artifactId> -->
+<!--                <executions> -->
+<!--                    <execution> -->
+<!--                        <id>copy</id> -->
+<!--                        <phase>install</phase> -->
+<!--                        <goals> -->
+<!--                            <goal>copy-dependencies</goal> -->
+<!--                        </goals> -->
+<!--                        <configuration> -->
+<!--                            <outputDirectory> -->
+<!--                              ${project.build.directory}/lib -->
+<!--                            </outputDirectory> -->
+<!--                        </configuration> -->
+<!--                    </execution> -->
+<!--                </executions> -->
+<!--            </plugin>                    -->
+            
+            <!-- Para crear un jar con todas las dependencias incluidas en él -->
+<!--             <plugin> -->
+<!--                 <groupId>org.apache.maven.plugins</groupId> -->
+<!--                 <artifactId>maven-shade-plugin</artifactId> -->
+<!--                 <version>2.4.3</version> -->
+<!--                 <executions> -->
+<!--                     <execution> -->
+<!--                         <phase>package</phase> -->
+<!--                         <goals> -->
+<!--                             <goal>shade</goal> -->
+<!--                         </goals> -->
+<!--                         <configuration> -->
+<!-- -                             <shadedArtifactAttached>true</shadedArtifactAttached> -> -->
+<!--                             <transformers> -->
+<!--                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+<!--                                     <mainClass>org.josfranmc.gutenberg.catalog.client.JGutenbergCatalogClient</mainClass> -->
+<!--                                 </transformer> -->
+<!--                             </transformers> -->
+<!--                         </configuration> -->
+<!--                     </execution> -->
+<!--                 </executions> -->
+<!--             </plugin>                       -->
+
+      </plugins>     
+  </build>    
+</project>
