@@ -75,7 +75,7 @@
   </dependencies>
   
   <build>
-      <finalName>JGutenbergCatalog</finalName>
+      <finalName>JGutenbergCatalog-1.0</finalName>
       <plugins>
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
