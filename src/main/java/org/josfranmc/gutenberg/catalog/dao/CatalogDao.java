@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,9 @@ public class CatalogDao implements ICatalogDao {
 			while (resultSet.next()) {
 				books.add(getBookFromResultSet(resultSet));
 			}
-		} catch (SQLException e) {
+		} catch (SQLSyntaxErrorException e) {
+			log.error("Usuario no tiene privilegios suficientes u objeto no encontrado");			
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
