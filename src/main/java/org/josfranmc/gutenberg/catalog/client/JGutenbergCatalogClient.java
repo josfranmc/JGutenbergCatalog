@@ -180,22 +180,26 @@ public class JGutenbergCatalogClient {
 	 */
 	private static void getAllBooks() {
 		List<Book> books = CATALOGDB.getAllBooks();
-		File file = new File("catalog.txt");
-		try {
-			if (file.createNewFile()) {
-				BufferedWriter bw = null;
-				bw = new BufferedWriter(new FileWriter(file));
-				for (Book book : books) {
-					bw.write(book.getId() + " " + book.getLanguage() + " " + book.getTitle() + " " +  book.getAuthor());
-					bw.newLine();
+		if (books.size() > 0) {
+			File file = new File("catalog.txt");
+			try {
+				if (file.createNewFile()) {
+					BufferedWriter bw = null;
+					bw = new BufferedWriter(new FileWriter(file));
+					for (Book book : books) {
+						bw.write(book.getId() + " " + book.getLanguage() + " " + book.getTitle() + " " +  book.getAuthor());
+						bw.newLine();
+					}
+					bw.close();
+					log.info("Creado fichero " + file.getAbsolutePath());
+				} else {
+					log.error("No se ha podido crear fichero de descarga. Ya existe");
 				}
-				bw.close();
-				log.info("Creado fichero " + file.getAbsolutePath());
-			} else {
-				log.error("No se ha podido crear fichero de descarga. Ya existe");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		} else {
+			log.info("No existen datos en la base de datos");
 		}
 	}
 	
