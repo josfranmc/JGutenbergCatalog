@@ -92,7 +92,6 @@ public class CatalogBuilder {
 	 * formato sparql necesarias. Para ello se usa Apache Jena.<p>
 	 * Crea un map cuyo campo clave es el identificador de cada libro y asociado a cada uno de los identificadores un objeto Book que encapsula 
 	 * la información obtenida.
-	 * @return map con el catálogo de libros
 	 * @see Book
 	 */
 	public void build() {
@@ -249,7 +248,7 @@ public class CatalogBuilder {
 	
 	/**
 	 * Establece la ruta de la carpeta que contine los archivos RDF con la información de cada libro.
-	 * @param pathCatalog ruta de la carpeta
+	 * @param catalogPath ruta de la carpeta
 	 */
 	public void setCatalogPath(String catalogPath) {
 		this.catalogPath = catalogPath.endsWith(System.getProperty("file.separator")) ? catalogPath : catalogPath.concat(System.getProperty("file.separator"));

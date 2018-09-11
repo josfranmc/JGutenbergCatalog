@@ -199,7 +199,7 @@ public class JGutenbergCatalog {
 
 	/**
 	 * Elimina un libro del catálogo.
-	 * @param identificador del libro a eliminar
+	 * @param id identificador del libro a eliminar
 	 */
 	public void deleteBook(String id) {
 		catalogDao.deleteBook(id);

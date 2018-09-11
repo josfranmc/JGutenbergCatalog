@@ -1,0 +1,5 @@
+org.josfranmc.gutenberg.catalog
+org.josfranmc.gutenberg.catalog.client
+org.josfranmc.gutenberg.catalog.dao
+org.josfranmc.gutenberg.catalog.db
+org.josfranmc.gutenberg.util
