@@ -10,11 +10,8 @@ import org.josfranmc.gutenberg.catalog.db.HSQLServer;
 
 /**
  * Crea y carga en memoria una base de datos con el catálogo de libros del proyecto Gutenberg (<a href="http://www.gutenberg.org/">http://www.gutenberg.org/</a>)<p>
- * Internamente se usa una base de datos HSQLDB, la cual la utiliza los ficheros creados en el directorio db/HSQLDB/ que se crea en la carpeta de ejecución del programa.<p>
- * 
+ * Internamente se usa una base de datos HSQLDB, la cual utiliza los ficheros creados en el directorio db/HSQLDB/ que se crea en la carpeta de ejecución del programa.<p>
  * La información de los libros disponibles se encuentra en ficheros RDF, existiendo un fichero por cada libro.
- * 
- *  
  * Estos ficheros se pueden obtener
  * descargando el zip de <a href="http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip">http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip</a>.
  * Dentro de la carpeta epub del zip se encuentra una carpeta por cada libro del catálogo. El nombre de la carpeta es el mismo que el identificador del
@@ -180,7 +177,7 @@ public class JGutenbergCatalog {
 	/**
      * Devuelve una lista de libros según los identificadores pasados.<br>
 	 * Cada libro se devuelve como un objeto de tipo Book.
-	 * @param ids lista deidentificadores de los libros a recuperar
+	 * @param ids lista de identificadores de los libros a recuperar
 	 * @return lista de objetos de tipo Book
 	 * @see Book
 	 */

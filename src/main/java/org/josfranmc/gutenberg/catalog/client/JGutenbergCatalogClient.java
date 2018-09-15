@@ -114,16 +114,14 @@ public class JGutenbergCatalogClient {
 			if (args.length == 2 && args[0].equals("-c")) {
 				task = Tasks.CREATE_DB;
 				rdfPath = args[1];
-			} else if (args.length == 1 && args[0].equals("-l")) {
+			} else if (args.length == 1 && args[0].equals("-f")) {
 				task = Tasks.GET_ALL_BOOKS;
-			} else if (args.length == 2 && args[0].equals("-b")) {
+			} else if (args.length == 2 && args[0].equals("-q")) {
 				task = Tasks.GET_BOOK;			
 				idBook = args[1];
-				
-			} else if (args.length == 2 && args[0].equals("-s")) {
+			} else if (args.length == 2 && args[0].equals("-v")) {
 				task = Tasks.GET_BOOKS;			
-				idBooks = args[1];				
-				
+				idBooks = args[1];
 			} else if (args.length == 1 && args[0].equals("exit")) {
 				task = Tasks.EXIT;
 			} else {
@@ -141,36 +139,30 @@ public class JGutenbergCatalogClient {
 	}
 	
 	/**
-	 * Consulta un libro
+	 * Muestra por pantalla los datos de un libro
+	 * @param book libro a mostrar
 	 */
-	private static void getBook() {
-		Book book = CATALOGDB.getBookById(idBook);
+	private static void showBook(Book book) {
 		System.out.println(" ");
-		System.out.println("Book: " + idBook);
+		System.out.println("Book: " + book.getId());
 		System.out.println("  Título: " + book.getTitle());
 		System.out.println("  Autor: " + book.getAuthor());
 		System.out.println("  Idioma: " + book.getLanguage());
 		System.out.println(" ");
 	}
 	
+	/**
+	 * Consulta un libro
+	 */
+	private static void getBook() {
+		Book book = CATALOGDB.getBookById(idBook);
+		showBook(book);
+	}
+	
 	private static void getBooks() {
 		List<Book> books = CATALOGDB.getBooksById(Arrays.asList(idBooks.split(",")));
-		File file = new File("catalog.txt");
-		try {
-			if (file.createNewFile()) {
-				BufferedWriter bw = null;
-				bw = new BufferedWriter(new FileWriter(file));
-				for (Book book : books) {
-					bw.write(book.getId() + " " + book.getLanguage() + " " + book.getTitle() + " " +  book.getAuthor());
-					bw.newLine();
-				}
-				bw.close();
-				log.info("Creado fichero " + file.getAbsolutePath());
-			} else {
-				log.error("No se ha podido crear fichero de descarga. Ya existe");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		for (Book book : books) {
+			showBook(book);
 		}
 	}
 	
@@ -207,14 +199,20 @@ public class JGutenbergCatalogClient {
 	 * Muestra menú de ayuda
 	 */
 	private static void showHelp() {
+		System.out.println("");	
 		System.out.println("Opciones:");
-		System.out.println("- Para cargar base de datos:");
-		System.out.println("   [-c ruta_archivos_RDF]");
-		System.out.println("- Para consultar base de datos:");
-		System.out.println("   [-b id] (siendo id el identicador del libro a consultar) o");
-		System.out.println("   [-l] crea fichero con todos los libros");
+		System.out.println("");		
+		System.out.println("Cargar base de datos:");
+		System.out.println("   -c ruta_archivos_RDF");
+		System.out.println("Consultar:");
+		System.out.println("   -q id       (id = identicador de libro)");
+		System.out.println("   -v list_id  (list_id = lista de identicadores, separadas por comas)");		
+		System.out.println("Volcar en fichero de texto los datos de todos los libros:");
+		System.out.println("   -f");
+		System.out.println("Mostrar ayuda:");
+		System.out.println("   -h");		
 		System.out.println("");
-		System.out.println("(indicar solo -h para mostrar lista de opciones)");
+		System.out.println("(exit para terminar)");
 		System.out.println("");
 	}
 }
