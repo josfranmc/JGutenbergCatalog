@@ -15,32 +15,33 @@ import org.apache.jena.util.FileManager;
 import org.apache.log4j.Logger;
 
 /**
- * Permite consultar los ficheros RDF que componen el catálogo del proyecto Gutenberg. 
+ * It allows to query the RDF files that make up the Gutenberg project catalog. 
  * @author Jose Francisco Mena Ceca
- * @version 1.0
+ * @version 2.0
  * @see Book
+ * @see Catalog
  */
 public class QueryRdfBook {
 
 	private static final Logger log = Logger.getLogger(QueryRdfBook.class);
 	
 	/**
-	 * Consulta el fichero RDF correspondiente a un libro, extrayendo los siguientes datos:
+	 * It queries a RDF file about a book in order to extracting its data:
 	 * <ul>
-	 * <li>título del libro</li>
-	 * <li>autor</li>
-	 * <li>idioma</li>
+	 * <li>title</li>
+	 * <li>author</li>
+	 * <li>language</li>
 	 * </ul>
-	 * @param path ruta del fichero a consultar
-	 * @return un objeto de tipo Book que encapsula los datos obtenidos
+	 * @param filePath the path of the file to query
+	 * @return a <code>Book</code> object
 	 * @see Book
 	 */
-	public static Book getBook(String path) {
+	public static Book getBook(String filePath) {
 		Book book = new Book();
 		Model model = ModelFactory.createDefaultModel();
-		InputStream is = FileManager.get().open(path);
+		InputStream is = FileManager.get().open(filePath);
 		if (is == null) {
-			log.warn("Archivo no encontrado: " + path);
+			log.warn("File not found: " + filePath);
 		} else {
 			model.read(is, "http://www.gutenberg.org/", "RDF/XML");
 			String title = executeSparqlStatement(model, "title");
@@ -49,15 +50,16 @@ public class QueryRdfBook {
 			book.setTitle(title.replaceAll("[\n\r]", ""));
 			book.setAuthor(creator);
 			book.setLanguage(language);
+			book.setId(getBookId(filePath));
 		}
 		return book;
 	}
 	
 	/**
-	 * Ejecuta una consulta sparql.
-	 * @param model objeto model usado por Jena
-	 * @param field campo que consultar
-	 * @return el resultado de la cosulta ejecutada
+	 * It executes a SPARQL query.
+	 * @param model model object used by Jena
+	 * @param field query field
+	 * @return the result of the query
 	 */
 	private static String executeSparqlStatement(Model model, String field) {
 		Literal literal = null;		
@@ -71,7 +73,7 @@ public class QueryRdfBook {
 				literal = qsol.getLiteral(field);
 			}
 		} catch (Exception e) {
-			log.error("Consultando campo = " + field);
+			log.error("Query field = " + field);
 			log.error(e);
 		} finally {
 			qexec.close();
@@ -80,7 +82,7 @@ public class QueryRdfBook {
 	}
 	
 	/**
-	 * @return las sentencias PREFIX para las consultas SPARQL
+	 * @return the PREFIX stataments to SPARQL queries
 	 */
 	private static String getSparqlQueryPrefix() {
 		String prefix = "PREFIX dcterms: <http://purl.org/dc/terms/> \n";
@@ -90,15 +92,15 @@ public class QueryRdfBook {
 	}
 
 	/**
-	 * Obtiene la consulta sparql adecuada para recuperar la información indicada por parámetro.<br>Se pueden obtener tres tipos de consulta según el
-	 * valor del parámetro <i>field</i>:
+	 * Returns the SPARQL query according to the indicate parameter.<br>
+	 * Three types of query can be obtained depending on the value of the parameter <i>field</i>:
 	 * <ul>
-	 * <li><b>title</b>: para consultar el título de un libro</li>
-	 * <li><b>author</b>: para consultar el autor de un libro</li>
-	 * <li><b>language</b>: para consultar el idioma de un libro/li>
+	 * <li>title</li>
+	 * <li>author</li>
+	 * <li>language</li>
 	 * </ul>
-	 * @param field tipo de consulta a recuperar
-	 * @return consulta sparql
+	 * @param field query type to execute
+	 * @return a SPARQL query
 	 */
 	private static String getQueryString(String field) {
 		String queryString = null;
@@ -113,7 +115,7 @@ public class QueryRdfBook {
 	}
 	
 	/**
-	 * @return la consulta sparql para recuperar el título de un libro
+	 * @return the sparql query for getting the book title
 	 */
 	private static String getTitleQuery() {
 		String queryString = getSparqlQueryPrefix();
@@ -123,7 +125,7 @@ public class QueryRdfBook {
 	}
 	
 	/**
-	 * @return la consulta sparql para recuperar el autor de un libro
+	 * @return the sparql query for getting the book author
 	 */
 	private static String getAuthorQuery() {
 		String queryString = getSparqlQueryPrefix();
@@ -134,7 +136,7 @@ public class QueryRdfBook {
 	}
 	
 	/**
-	 * @return la consulta sparql para recuperar el idioma de un libro
+	 * @return the sparql query for getting the book language
 	 */
 	private static String getLanguageQuery() {
 		String queryString = getSparqlQueryPrefix();
@@ -142,5 +144,11 @@ public class QueryRdfBook {
 	    queryString += "WHERE { ?s dcterms:language ?l . \n";
 	    queryString += "        ?l rdf:value ?lan . } \n";
 	    return queryString;		
+	}
+	
+	private static String getBookId(String filePath) {
+		int init = filePath.lastIndexOf(Catalog.FILE_PREFIX) + 2;
+		int end = filePath.lastIndexOf(Catalog.FILE_EXTENSION);
+		return filePath.substring(init, end);
 	}
 }

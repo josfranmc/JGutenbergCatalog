@@ -3,12 +3,10 @@ package org.josfranmc.gutenberg.catalog;
 import java.io.Serializable;
 
 /**
- * Encapsula los datos de un libro.<p>
- * Los libros quedan identificados mediante el código obtenido del proyecto Gutenberg (<a href="http://www.gutenberg.org/">http://www.gutenberg.org/</a>).
- * Este código se corresponde con el nombre del fichero del libro.<br>
- * Para cada libro se guarda identificador, autor, título e idioma.
+ * For managing the books in the application.<br>
+ * Every book is identified by a number. This number is the RDF file name that contains the book data. 
  * @author Jose Francisco Mena Ceca
- * @version 1.0
+ * @version 2.0
  */
 public class Book implements Serializable {
 

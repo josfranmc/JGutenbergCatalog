@@ -1,9 +1,9 @@
 package org.josfranmc.gutenberg.catalog;
 
-import java.io.File;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.josfranmc.db.DbConnection;
 import org.josfranmc.gutenberg.catalog.dao.CatalogDao;
 import org.josfranmc.gutenberg.catalog.dao.ICatalogDao;
 import org.josfranmc.gutenberg.catalog.db.HSQLServer;
@@ -31,16 +31,10 @@ public class JGutenbergCatalog {
 
 	private static final Logger log = Logger.getLogger(JGutenbergCatalog.class);
 	
-	/**
-	 * Referencia a la instancia del servidor de base de datos
-	 */
-	private HSQLServer hsqlServer = null;
-
-	/**
-	 * Referencia para patrón Singleton
-	 */
-	private static JGutenbergCatalog jgcatalog = null;
+	private String rdfFilesPath;
 	
+	DbConnection dbConnection;
+
 	/**
 	 * Operaciones que pueden realizarse con la base de datos.
 	 */
@@ -48,109 +42,24 @@ public class JGutenbergCatalog {
 	
 
 	/**
-	 * Constructor por defecto.<br>
-	 * Crea una instancia de la base de datos.
-	 * @param startDb <i>true</i> si se quiere iniciar la base de datos, <i>false</i> en caso contrario
+	 * Creates the object for managing the construction of the catalog.
+	 * @param rdfFilesPath path to the folder that store the RDF files
+	 * @param dbConnection connection to the database where to load data
 	 */
-	private JGutenbergCatalog (boolean startDb) {
-		this.hsqlServer = new HSQLServer();
-		if (startDb) {
-			startDb();
-		}
+	JGutenbergCatalog(String rdfFilesPath, DbConnection dbConnection) {
+		this.rdfFilesPath = rdfFilesPath;
+		this.dbConnection = dbConnection;
+		
 		catalogDao = new CatalogDao();
 	}
 	
-	/**
-	 * Crea una instancia del tipo JGutenbergCatalog.<p>
-	 * Si es la primera vez que se invoca se crea una nueva instancia, devolviéndose esta misma en llamadas sucesivas.
-	 * @param startDb <i>true</i> si se quiere inicar el servidor de base de datos, <i>false</i> en caso contrario
-	 * @return la única instancia de la clase JGutenbergCatalog
-	 */
-	public static JGutenbergCatalog getInstance(boolean startDb) {
-		if (jgcatalog == null) {
-			synchronized (JGutenbergCatalog.class) {
-				if (jgcatalog == null) {
-					jgcatalog = new JGutenbergCatalog(startDb);
-				}
-			}
-		}
-		return jgcatalog;
-	}
 	
 	/**
-	 * Inicia la ejecución del servidor de base de datos.
-	 * @return <i>true</i> si se ha iniciado la base de datos correctamente, <i>false</i> en caso contrario
+	 * It loads the book catalog, which is stored in RDF files, in a database.<br>
+	 * It only loads new information. RDF files already loaded are ignored.
 	 */
-	public boolean startDb() {
-		boolean result = false;
-		if (!this.hsqlServer.isServerRunning()) {
-			this.hsqlServer.startDb();
-			result = true;
-		} else {
-			log.warn("Nada que iniciar. La base de datos ya se está ejecutando.");
-		}
-		return result;
-	}
-	
-	/**
-	 * Termina la ejecución del servidor de base de datos.
-	 * @return  <i>true</i> si se ha terminado la ejecución correctamente, <i>false</i> en caso contrario
-	 */
-	public boolean shutdownDb() {
-		boolean result = false;
-		if (this.hsqlServer.isServerRunning()) {
-			this.hsqlServer.shutdownDb();
-			result = true;
-		} else {
-			log.warn("Nada que parar. La base de datos no se está ejecutando.");
-		}
-		return result;
-	}
-	
-	/**
-	 * @return <i>true</i> si el servidor de base de datos se está ejecutando, <i>false</i> en caso contrario
-	 */
-	public boolean isDbRunning() {
-		return this.hsqlServer.isServerRunning();
-	}
-	
-	/**
-	 * @return la ruta donde se guardan los ficheros de la base de datos
-	 */
-	public String getPathDb() {
-		return this.hsqlServer.getPathDb();
-	}
-	
-	/**
-	 * Carga en la base de datos la información del catálogo de libros.<br>
-	 * Se extrae la información de una serie de ficheros RDF y se guarda en base de datos. Solo se guada la información nueva que no esté ya guardada.
-	 * @param pathRDFs ruta de la carpeta que contine los archivos RDF
-	 */
-	public void createCatalog(String pathRDFs) {
-		if (this.hsqlServer.isServerRunning()) {
-			if (isValidPath(pathRDFs)) {
-				new CatalogBuilder(pathRDFs).build();
-			} else {
-				log.error("La ruta del almacén de los ficheros RDF no es correcta.");
-			}
-		} else {
-			log.warn("Imposible crear catálogo. Base de datos no inicializada.");
-		}
-	}
-	
-	/**
-	 * Comprueba si la ruta indicada es válida.
-	 * @param pathRDFs ruta a comprobar
-	 * @return <i>true</i> si la ruta es válida, <i>false</i> en caso contrario
-	 */
-	private boolean isValidPath(String pathRDFs) {
-		boolean response = false;
-		if (pathRDFs != null) {
-			if (new File(pathRDFs).exists()) {
-				response = true;
-			}
-		}
-		return response;
+	public void createCatalog() {
+		new Catalog(this.rdfFilesPath, this.dbConnection).create();
 	}
 
 	/**
