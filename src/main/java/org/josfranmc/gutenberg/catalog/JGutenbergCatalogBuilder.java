@@ -3,9 +3,9 @@ package org.josfranmc.gutenberg.catalog;
 import java.io.File;
 import java.util.Properties;
 
-import org.josfranmc.db.DbConnection;
-import org.josfranmc.db.DbConnectionBuilder;
-import org.josfranmc.files.PropertiesFile;
+import org.josfranmc.gutenberg.db.DbConnection;
+import org.josfranmc.gutenberg.db.DbConnectionBuilder;
+import org.josfranmc.gutenberg.files.PropertiesFile;
 
 /**
  * Crea y carga en memoria una base de datos con el catálogo de libros del proyecto Gutenberg (<a href="http://www.gutenberg.org/">http://www.gutenberg.org/</a>)<p>

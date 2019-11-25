@@ -1,4 +1,4 @@
-package org.josfranmc.files;
+package org.josfranmc.gutenberg.files;
 
 import java.io.FileInputStream;
 import java.io.IOException;

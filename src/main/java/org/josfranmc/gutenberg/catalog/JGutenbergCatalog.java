@@ -3,10 +3,9 @@ package org.josfranmc.gutenberg.catalog;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.josfranmc.db.DbConnection;
 import org.josfranmc.gutenberg.catalog.dao.CatalogDao;
 import org.josfranmc.gutenberg.catalog.dao.ICatalogDao;
-import org.josfranmc.gutenberg.catalog.db.HSQLServer;
+import org.josfranmc.gutenberg.db.DbConnection;
 
 /**
  * Crea y carga en memoria una base de datos con el catálogo de libros del proyecto Gutenberg (<a href="http://www.gutenberg.org/">http://www.gutenberg.org/</a>)<p>

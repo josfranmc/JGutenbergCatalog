@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.josfranmc.db.DbConnection;
+import org.josfranmc.gutenberg.db.DbConnection;
 
 /**
  * It allows to store in database the information about Gutenberg book catalog.<p>
