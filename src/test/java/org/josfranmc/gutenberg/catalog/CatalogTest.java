@@ -2,7 +2,6 @@ package org.josfranmc.gutenberg.catalog;
 
 import static org.junit.Assert.assertNull;
 
-import org.josfranmc.gutenberg.catalog.db.HSQLServer;
 import org.junit.Test;
 
 /**
@@ -10,42 +9,46 @@ import org.junit.Test;
  * @author Jose Francisco Mena Ceca
  * @version 1.0
  */
-public class CatalogBuilderTest {
+public class CatalogTest {
 
 	/**
 	 * Si el parámetro pathRDFs del constructor es null, entonces lanzar excepción IllegalArgumentException
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void givenPathRDFsParameterWhenNullThenIllegalArgumentException() {
-		new CatalogBuilder(null);
+	public void givenRdfFilesPathParameterWhenNullThenIllegalArgumentException() {
+		new Catalog(null, null);
 	}
 	
 	/**
 	 * Si el parámetro pathRDFs del constructor es una cadena vacía, entonces lanzar excepción IllegalArgumentException
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void givenPathRDFsParameterWhenEmptyThenIllegalArgumentException() {
-		new CatalogBuilder("");
+	public void givenRdfFilesPathParameterWhenEmptyThenIllegalArgumentException() {
+		new Catalog("", null);
 	}
 	
 	/**
 	 * Si la ruta de los archivos RDF es errónea, entonces lanzar excepción IllegalArgumentException
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void givenPathRDFsWhenWrongThenIllegalArgumentException() {
-		HSQLServer server = new HSQLServer();
-		server.startDb();
-		CatalogBuilder cb = new CatalogBuilder("c:\\qsf\\wqf\\errorr");
-		server.shutdownDb();
-		cb.build();
+	public void givenRdfFilesPathWhenWrongThenIllegalArgumentException() {
+		new Catalog("c:\\qsf\\wqf\\errorr", null);
 	}
 	
 	/**
 	 * Si no se ha podido establecer conexión con la base de datos, entonces el objeto Connection de la clase debe ser null
 	 */
-	@Test
-	public void testConstructor() {
-		CatalogBuilder cb = new CatalogBuilder("c:\\ejemplo");
-		assertNull("La conexión no es null" , cb.getConnection());
+//	@Test
+//	public void testConstructor() {
+//		Catalog cb = new Catalog("c:\\ejemplo", null);
+//		assertNull("La conexión no es null" , cb.getConnection());
+//	}
+	
+	/**
+	 * Si la ruta de los archivos RDF es errónea, entonces lanzar excepción IllegalArgumentException
+	 */
+	@Test(expected=IllegalArgumentException.class)
+	public void givenDbConnectionWhenNullThenIllegalArgumentException() {
+		new Catalog("c:\\test", null);
 	}
 }
