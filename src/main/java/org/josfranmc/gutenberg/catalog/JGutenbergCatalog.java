@@ -1,112 +1,139 @@
 package org.josfranmc.gutenberg.catalog;
 
-import java.util.List;
+import java.io.File;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.josfranmc.gutenberg.catalog.dao.CatalogDao;
-import org.josfranmc.gutenberg.catalog.dao.ICatalogDao;
 import org.josfranmc.gutenberg.db.DbConnection;
+import org.josfranmc.gutenberg.db.DbConnectionBuilder;
+import org.josfranmc.gutenberg.files.PropertiesFile;
 
 /**
- * Crea y carga en memoria una base de datos con el catálogo de libros del proyecto Gutenberg (<a href="http://www.gutenberg.org/">http://www.gutenberg.org/</a>)<p>
- * Internamente se usa una base de datos HSQLDB, la cual utiliza los ficheros creados en el directorio db/HSQLDB/ que se crea en la carpeta de ejecución del programa.<p>
- * La información de los libros disponibles se encuentra en ficheros RDF, existiendo un fichero por cada libro.
- * Estos ficheros se pueden obtener
- * descargando el zip de <a href="http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip">http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip</a>.
- * Dentro de la carpeta epub del zip se encuentra una carpeta por cada libro del catálogo. El nombre de la carpeta es el mismo que el identificador del
- * libro, es decir, igual que el nombre del fichero del libro. Dentro de cada carpeta se encuentra el fichero RDF corespondiente cuyo nombre es 
- * pg+<i>identificador_libro</i>+.rdf.<p>
- * Ej.: Para libro identificado como <i>45238</i> existe una carpeta <i>45238</i> y dentro de ella un fichero <i>pg45238.rdf</i><p> 
- * Mediante el método <i>createCatalog()</i> se leen los ficheros y se carga en memoria la información consultada. Los datos que se obtienen de cada
- * libro son: identificador, título, autor e idioma. Esots datos se obtienen mediante consultas de tipo sparql a los ficheros RDF. Se usa la librería
- * Apache Jena para ello<p>
- * También se ofrecen una serie de métodos para consultar la base de datos.
+ * It allows to manager the Gutenberg project book catalog.<p>
+ * The catalog is a collection of RDF files that you can get from this link: <a href="http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip">http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip</a>.<br>
+ * There are a series of folders inside the <i>cache/epub</i> directory, a folder for each book. The name of each folder is the identifier of each book.
+ * Inside each folder is the corresponding RDF file whose name is "pg+<i>book_identifier</i>+.rdf".<p>
+ * e.g.: For book <i>45238</i> there is a folder called <i>45238</i> and within it a file called <i>pg45238.rdf</i><p>
+ * By default, if no database is specified a HSQL database is created. This database is located in a folder called <i>catalog</i> and its name is <i>gutenberg</i>.
+ * Setting data are loaded from a resource file which path is <i>db/DbConnection.properties</i>.<br>
+ * Alternativaly, you can specify a setting file to use either a MySQL or a PostgresSQL database.
  * @author Jose Francisco Mena Ceca
- * @version 1.0
- * @see HSQLServer
- * @see Book
+ * @version 2.0
+ * @see Catalog
+ * @see DbConnection
  */
 public class JGutenbergCatalog {
 
 	private static final Logger log = Logger.getLogger(JGutenbergCatalog.class);
 	
-	private String rdfFilesPath;
+	private static final String DB_DEFAULT = "db/DbConnection.properties";
 	
+	/**
+	 * The path to the folder that contains RDF files about books
+	 */
+	private File rdfFilesFolder;
+	
+	/**
+	 * Database where to save the data about books
+	 */
 	DbConnection dbConnection;
 
 	/**
-	 * Operaciones que pueden realizarse con la base de datos.
+	 * Catalog of RDF files
 	 */
-	private ICatalogDao catalogDao = null;
-	
+	private Catalog catalog;
 
+	
+	/**
+	 * Creates the object for managing the construction of the catalog. It uses a default database.
+	 * @param rdfFilesPath path to the folder that store the RDF files
+	 */
+	public JGutenbergCatalog(String rdfFilesPath) {
+		this(rdfFilesPath, DB_DEFAULT);
+	}
+	
 	/**
 	 * Creates the object for managing the construction of the catalog.
 	 * @param rdfFilesPath path to the folder that store the RDF files
 	 * @param dbConnection connection to the database where to load data
 	 */
-	JGutenbergCatalog(String rdfFilesPath, DbConnection dbConnection) {
-		this.rdfFilesPath = rdfFilesPath;
-		this.dbConnection = dbConnection;
+	public JGutenbergCatalog(String rdfFilesPath, String dbConfigFile) {
+		if (rdfFilesPath == null) {
+			throw new IllegalArgumentException("Invalid null value for path to RDF container");
+		}
+		File path = new File(rdfFilesPath);
+		if (!path.exists()) {
+			throw new IllegalArgumentException("Invalid path to RDF container");
+		}
+		this.rdfFilesFolder = path;
 		
-		catalogDao = new CatalogDao();
+		if (dbConfigFile == null) {
+			throw new IllegalArgumentException("Invalid null value for database setting file");
+		}
+		this.dbConnection = getDbConnection(dbConfigFile);
+
+		this.catalog = new Catalog(this.rdfFilesFolder, this.dbConnection);
 	}
 	
+	private DbConnection getDbConnection(String dbConfigFile) {
+		Properties properties = new Properties();
+		if (dbConfigFile == DB_DEFAULT) {
+			properties = PropertiesFile.loadPropertiesFromResource(DB_DEFAULT);
+		} else {
+			File path = new File(dbConfigFile);
+			if (!path.exists()) {
+				throw new IllegalArgumentException("Invalid path to database setting file");
+			}
+			properties = PropertiesFile.loadPropertiesFromFileSystem(dbConfigFile);
+		}
+		return new DbConnectionBuilder().setSettingProperties(properties).build();
+	}
 	
 	/**
 	 * It loads the book catalog, which is stored in RDF files, in a database.<br>
 	 * It only loads new information. RDF files already loaded are ignored.
 	 */
 	public void createCatalog() {
-		new Catalog(this.rdfFilesPath, this.dbConnection).create();
+		this.catalog.create();
 	}
 
 	/**
-	 * Devuelve una lista con todos loa libros existentes en el catálogo.<br>
-	 * Cada libro se devuelve como un objeto de tipo Book.
-	 * @return lista con todos los libros del catálogo
-	 * @see Book
+	 * Main method for running the application.
+	 * @param args list of arguments with application parameters
 	 */
-	public List<Book> getAllBooks() {
-		return catalogDao.getAllBooks();
-	}
+	public static void main(String [] args){
+		if (args.length == 0 || (args[0].equals("-h") || args[0].equals("-help"))) {
+			showHelp();
+		} else {
+			String rdfFolder = null;
+			String dbFile = DB_DEFAULT;
+			for (int i = 0; i < args.length; i+=2) {
+				try {
+					if (args[i].equals("-r")) {
+						rdfFolder = args[i+1];
+					} else if (args[i].equals("-b")) {
+						dbFile = args[i+1];
+					} else {
+						throw new IllegalArgumentException("Parameter " + args[i]);
+					}
+				} catch (ArrayIndexOutOfBoundsException a) {
+					throw new IllegalArgumentException("Parameter " + args[i]);
+				}
+			}
 
-	/**
-	 * Devuelve un libro según su identificador.<br>
-	 * Se devuelve como un objeto de tipo Book.
-	 * @param id identificador del libro
-	 * @return libro buscado
-	 * @see Book
-	 */
-	public Book getBookById(String id) {
-		return catalogDao.getBookById(id);
+			JGutenbergCatalog jg = new JGutenbergCatalog(rdfFolder, dbFile);					
+			jg.createCatalog();
+		}
 	}
 	
-	/**
-     * Devuelve una lista de libros según los identificadores pasados.<br>
-	 * Cada libro se devuelve como un objeto de tipo Book.
-	 * @param ids lista de identificadores de los libros a recuperar
-	 * @return lista de objetos de tipo Book
-	 * @see Book
-	 */
-	public List<Book> getBooksById(List<String> ids) {
-		return catalogDao.getBooksById(ids);
-	}
-
-	/**
-	 * Añade un libro al catálogo.
-	 * @param book libro a añadir
-	 * @see Book
-	 */
-	public void addBook(Book book) {
-		catalogDao.addBook(book);
-	}
-
-	/**
-	 * Elimina un libro del catálogo.
-	 * @param id identificador del libro a eliminar
-	 */
-	public void deleteBook(String id) {
-		catalogDao.deleteBook(id);
+	private static void showHelp() {
+		log.info("");
+		log.info("Usage: java -jar JGutenbergCatalog [options]");
+		log.info("Options:");
+		log.info("   -r xxx (xxx type of files to download, default: txt)");
+		log.info("   -b xx  (xx  language of books to download, default: es)");
+		log.info("");
+		log.info("(only -h to show options list)");
+		log.info("");
 	}
 }

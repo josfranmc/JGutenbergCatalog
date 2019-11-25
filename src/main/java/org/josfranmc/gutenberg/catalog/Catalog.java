@@ -17,61 +17,57 @@ import org.apache.log4j.Logger;
 import org.josfranmc.gutenberg.db.DbConnection;
 
 /**
- * It allows to store in database the information about Gutenberg book catalog.<p>
- * El catálogo se construye utilizando los ficheros RDF que previamente han tenido que ser descargados y descomprimidos en una carpeta. La dirección para
- * obtener el zip es <a href="http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip">http://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.zip</a>
- * Dentro de la carpeta epub del zip se encuentra una carpeta por cada libro del catálogo. El nombre de la carpeta es el mismo que el identificador del
- * libro, es decir, igual que el nombre del fichero del libro. Dentro de cada carpeta se encuentra el fichero RDF corespondiente cuyo nombre es 
- * pg+<i>identificador_libro</i>+.rdf.<p>
- * Ej.: Para libro identificado como <i>45238</i> existe una carpeta <i>45238</i> y dentro de ella un fichero <i>pg45238.rdf</i><p>
- * Los datos que se obtienen de cada libro son: identificador, título, autor e idioma. Esots datos se obtienen mediante consultas de tipo sparql a los
- * ficheros RDF.<p>
+ * It allows to store in a database the information about the book catalog of the Gutenberg project.<br>
+ * It needs two elements:
+ * <ul>
+ * <li>the path to the folder that contains RDF files about books</li>
+ * <li>a connection to the database where to save the data</li>
+ * </ul>
+ * The catalog exists as a collection of RDF files. These files are queried and the result is loaded into a database.
  * @author Jose Francisco Mena Ceca
  * @version 2.0
- * @see 
+ * @see JGutenbergCatalog
+ * @see RdfFile
+ * @see Book
  */
 public class Catalog {
 	
 	private static final Logger log = Logger.getLogger(Catalog.class);
-	
-	private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-	
-	public static final String FILE_PREFIX = "pg";
-	
-	public static final String FILE_EXTENSION = ".rdf";
+
+	/**
+	 * The path to the folder that contains RDF files about books
+	 */
+	private File rdfFilesFolder;
 	
 	/**
-	 * The path to the folder that contains RDF files
+	 * Connection to the database where to save the data about books
 	 */
-	private String rdfFilesPath = null;
-	
-	/**
-	 * Connection to the database where to save the read data
-	 */
-	private Connection connection = null;
+	private Connection connection;
 	
 	/**
 	 * SQL statement for insert a book
 	 */
-	private PreparedStatement insertStatament = null;
+	private PreparedStatement insertStatament;
 	
 	/**
 	 * SQL statement for select a book
 	 */
-	private PreparedStatement selectStatament = null;
-	
+	private PreparedStatement selectStatament;
 	
 	/**
-	 * @param rdfFilesPath path to the folder that store the RDF files
+	 * Collection of RDF files
+	 */
+	private List<RdfFile> rdfFiles;
+	
+	/**
+	 * @param rdfFilesFolder path to the folder that store the RDF files
 	 * @param dbConnection connection to the database where to load data
 	 */
-	Catalog(String rdfFilesPath, DbConnection dbConnection) {
-		if (rdfFilesPath == null || rdfFilesPath.isEmpty()) {
-			throw new IllegalArgumentException("You must specify the folder where RDF files are stored.");
+	Catalog(File rdfFilesFolder, DbConnection dbConnection) {
+		if (rdfFilesFolder == null || !rdfFilesFolder.exists()) {
+			throw new IllegalArgumentException("Invalid path to RDF container.");
 		}
-		if (!rdfFilesPath.endsWith(FILE_SEPARATOR)) {
-			this.rdfFilesPath = rdfFilesPath + FILE_SEPARATOR;
-		}
+		this.rdfFilesFolder = rdfFilesFolder;
 
 		if (dbConnection == null) {
 			throw new IllegalArgumentException("There is not object to managing database connection.");
@@ -82,86 +78,60 @@ public class Catalog {
 		} catch (SQLException e) {
 			throw new GutenbergCatalogException(e.getMessage());
 		}
+		
+		rdfFiles = new ArrayList<>();
 	}
 	
 	/**
 	 * Creates the book catalog. It reads the RDF files that make up the catalog and loads these data in a database.
+	 * @see RdfFile
 	 * @see Book
-	 * @see QueryRdfBook
 	 */
 	public void create() {
-		log.info("LOADING CATALOG IN DB" + getCurrentTime());
+		log.info("[INFO] LOADING CATALOG IN DB " + getCurrentTime());
 		createTableForBooks();
 		createStatementForInsert();
 		createStatementForSelect();
-		
-		File catalogFolder = new File(this.rdfFilesPath);		
-		for (File rdfFile : getFilesPath(catalogFolder)) {
-			if (rdfFile.exists() && !isBookInDatabase(rdfFile)) {
-				Book book = QueryRdfBook.getBook(rdfFile.getAbsolutePath());
+
+		for (RdfFile rdfFile : getRdfFiles()) {
+			if (!isBookInDatabase(rdfFile.getId())) {
+				Book book = rdfFile.getBook();
 				saveBook(book);
 			}
 		}
 		commitAndClose();
-		log.info("END LOAD CATALOG IN DB " + getCurrentTime());
+		log.info("[INFO] LOAD COMPLETE " + getCurrentTime());
 	}
 	
 	/**
-	 * Returns a <code>List</code> with the path of all files to read.<p>
-	 * The base folder is scrolled. The name of every directory in this folder is a number. Every directory contains a RDF file.
-	 * The name of the file is: pg + directory_name + .rdf<p>
-	 * e.g.: the book with id 56789 is stored in the file <i>pg56789.rdf</i>, inside of the <i>56789</i> folder.
-	 * @param folderCatalog base folder with RDF files
-	 * @return the <code>List</code> with the path of all files to read
-	 * 
+	 * Returns a <code>List</code> of <code>RdfFile</code> objects that represents the collection of RDF files.<br>
+	 * The base folder is scrolled. For each folder a <code>RdfFile</code> object is created.
+	 * @return a <code>List</code> of <code>RdfFile</code> objects
+	 * @see RdfFile
 	 */
-	private List<File> getFilesPath(File folderCatalog) {
-		List<File> filesPath = new ArrayList<>();
-		File catalogFolder = new File(this.rdfFilesPath);
-		for (File folder : catalogFolder.listFiles()) {
-			if (!folder.getName().startsWith("DELETE")) {
-				String filePath = this.rdfFilesPath + folder.getName() + FILE_SEPARATOR + FILE_PREFIX + folder.getName() + FILE_EXTENSION;
-				File file = new File(filePath);
-				if (file.exists()) {
-					filesPath.add(file);
-				} else {
-					log.warn("Wrong file: " + filePath);
+	public List<RdfFile> getRdfFiles() {
+		for (File folder : this.rdfFilesFolder.listFiles()) {
+			if (!folder.getName().toLowerCase().contains("delete")) {
+				try {
+					RdfFile rdfFile = new RdfFile(folder);
+					this.rdfFiles.add(rdfFile);
+				} catch (IllegalArgumentException e) {
+					log.error(e.getMessage());
 				}
 			}
 		}
-		return filesPath;
+		return this.rdfFiles;
 	}
 	
-	/**
-	 * It saves a book in the database.
-	 * @param book object <code>Book</code> to save
-	 */
-	private void saveBook(Book book) {
-		try {
-			this.insertStatament.setString(1, book.getId());
-			this.insertStatament.setString(2, book.getAuthor());
-			this.insertStatament.setString(3, book.getTitle());
-			this.insertStatament.setString(4, book.getLanguage());
-			this.insertStatament.executeUpdate();
-       	 	log.debug("Guardado libro " + book.getId());
-		} catch (SQLIntegrityConstraintViolationException e) {
-			log.warn("Error saving " + book.getId() + ". Book already exists");
-		} catch (SQLException e) {
-			log.warn("Error saving " + book.getId() + ". " + e.toString());
-		}
-	}
-
 	/**
 	 * Checks if a book already exists in database.
 	 * @param id book identify to check
 	 * @return <i>true</i> if the book exists in database, <i>false</i> otherwise
 	 */
-	public boolean isBookInDatabase(File filePath) {
+	public boolean isBookInDatabase(String id) {
 		boolean result = false;
 		PreparedStatement pstatement = null;
 		ResultSet resultSet = null;
-		
-		String id = getBookId(filePath.getName());
 		try {
 			this.selectStatament.setString(1, id);
 			resultSet = this.selectStatament.executeQuery();
@@ -185,26 +155,21 @@ public class Catalog {
 		return result;
 	}
 	
-	private String getBookId(String cad) {
-		int init = cad.lastIndexOf(Catalog.FILE_PREFIX) + 2;
-		int end = cad.lastIndexOf(Catalog.FILE_EXTENSION);
-		return cad.substring(init, end);		
-	}
-	
 	/**
-	 * Commit changes and close database connection.
+	 * It saves a book in the database.
+	 * @param book object <code>Book</code> to save
 	 */
-	private void commitAndClose() {
+	private void saveBook(Book book) {
 		try {
-			if (this.insertStatament != null) {
-				this.insertStatament.close();
-			}
-			if (this.connection != null) {
-				this.connection.commit();
-				this.connection.close();
-			}
+			this.insertStatament.setString(1, book.getId());
+			this.insertStatament.setString(2, book.getAuthor());
+			this.insertStatament.setString(3, book.getTitle());
+			this.insertStatament.setString(4, book.getLanguage());
+			this.insertStatament.executeUpdate();
+		} catch (SQLIntegrityConstraintViolationException e) {
+			log.warn("SQLIntegrityConstraintViolationException: book " + book.getId());
 		} catch (SQLException e) {
-			log.error(e);
+			log.warn("Error saving " + book.getId() + ". " + e.toString());
 		}
 	}
 
@@ -243,6 +208,23 @@ public class Catalog {
 	private void createStatementForSelect() {
 		try {
 			this.selectStatament = this.connection.prepareStatement("SELECT * FROM books WHERE id = ?");
+		} catch (SQLException e) {
+			log.error(e);
+		}
+	}
+	
+	/**
+	 * Commit changes and close database connection.
+	 */
+	private void commitAndClose() {
+		try {
+			if (this.insertStatament != null) {
+				this.insertStatament.close();
+			}
+			if (this.connection != null) {
+				this.connection.commit();
+				this.connection.close();
+			}
 		} catch (SQLException e) {
 			log.error(e);
 		}
