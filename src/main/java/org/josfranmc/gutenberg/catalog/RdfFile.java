@@ -33,20 +33,13 @@ public class RdfFile {
 	public static final String FILE_EXTENSION = ".rdf";
 	
 	/**
-	 * The path to the RDF file
+	 * The absolute path to the RDF file
 	 */
 	private String filePath;
 	
 	private Book book;
 
-	/**
-	 * Initializes the object with the folder path that contains the RDF file about a book.
-	 * @param folder folder path
-	 */
-	RdfFile(String folder) {
-		this(new File(folder));
-	}
-	
+
 	/**
 	 * Initializes the object with the folder path that contains the RDF file about a book.
 	 * @param folder folder path as a <code>File</code> object
@@ -135,5 +128,30 @@ public class RdfFile {
 	 */
 	public String getId() {
 		return this.book.getId();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RdfFile other = (RdfFile) obj;
+		if (filePath == null) {
+			if (other.filePath != null)
+				return false;
+		} else if (!filePath.equals(other.filePath))
+			return false;
+		return true;
 	}
 }

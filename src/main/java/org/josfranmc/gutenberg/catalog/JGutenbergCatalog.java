@@ -14,6 +14,7 @@ import org.josfranmc.gutenberg.files.PropertiesFile;
  * There are a series of folders inside the <i>cache/epub</i> directory, a folder for each book. The name of each folder is the identifier of each book.
  * Inside each folder is the corresponding RDF file whose name is "pg+<i>book_identifier</i>+.rdf".<p>
  * e.g.: For book <i>45238</i> there is a folder called <i>45238</i> and within it a file called <i>pg45238.rdf</i><p>
+ * You can query the RDF files and you can create a database where to load the data.
  * By default, if no database is specified a HSQL database is created. This database is located in a folder called <i>catalog</i> and its name is <i>gutenberg</i>.
  * Setting data are loaded from a resource file which path is <i>db/DbConnection.properties</i>.<br>
  * Alternativaly, you can specify a setting file to use either a MySQL or a PostgresSQL database.
@@ -27,22 +28,17 @@ public class JGutenbergCatalog {
 	private static final Logger log = Logger.getLogger(JGutenbergCatalog.class);
 	
 	private static final String DB_DEFAULT = "db/DbConnection.properties";
-	
-	/**
-	 * The path to the folder that contains RDF files about books
-	 */
-	private File rdfFilesFolder;
-	
-	/**
-	 * Database where to save the data about books
-	 */
-	DbConnection dbConnection;
 
 	/**
 	 * Catalog of RDF files
 	 */
-	private Catalog catalog;
-
+	private CatalogRdf catalogRdf;	
+	
+	/**
+	 * Catalog of RDF files
+	 */
+	private CatalogDb catalogDb;
+	
 	
 	/**
 	 * Creates the object for managing the construction of the catalog. It uses a default database.
@@ -65,14 +61,13 @@ public class JGutenbergCatalog {
 		if (!path.exists()) {
 			throw new IllegalArgumentException("Invalid path to RDF container");
 		}
-		this.rdfFilesFolder = path;
+
+		this.catalogRdf = new CatalogRdf(path);
 		
 		if (dbConfigFile == null) {
 			throw new IllegalArgumentException("Invalid null value for database setting file");
 		}
-		this.dbConnection = getDbConnection(dbConfigFile);
-
-		this.catalog = new Catalog(this.rdfFilesFolder, this.dbConnection);
+		this.catalogDb = new CatalogDb(getDbConnection(dbConfigFile));
 	}
 	
 	private DbConnection getDbConnection(String dbConfigFile) {
@@ -90,13 +85,28 @@ public class JGutenbergCatalog {
 	}
 	
 	/**
-	 * It loads the book catalog, which is stored in RDF files, in a database.<br>
-	 * It only loads new information. RDF files already loaded are ignored.
+	 * It reads the book catalog, which is in the form of RDF files. The data is stored in memory.<br>
 	 */
-	public void createCatalog() {
-		this.catalog.create();
+	public void readRdfFiles() {
+		this.catalogRdf.readFiles();
 	}
 
+	/**
+	 * It loads the book catalog in a database. It reads the RDF files if it hasn't done it before.<br>
+	 * It only loads new information. RDF files already loaded are ignored.
+	 */
+	public void loadDb() {
+		if (this.catalogRdf.getRdfCatalog() == null || this.catalogRdf.getRdfCatalog().isEmpty()) {
+			this.catalogRdf.readFiles();
+			this.catalogDb.setRdfCatalog(this.catalogRdf.getRdfCatalog());
+		}
+		this.catalogDb.load();
+	}
+	
+	public Book getBook(String id) {
+		return this.catalogRdf.getRdfFile(id).getBook();
+	}
+	
 	/**
 	 * Main method for running the application.
 	 * @param args list of arguments with application parameters
@@ -121,8 +131,8 @@ public class JGutenbergCatalog {
 				}
 			}
 
-			JGutenbergCatalog jg = new JGutenbergCatalog(rdfFolder, dbFile);					
-			jg.createCatalog();
+			JGutenbergCatalog jg = new JGutenbergCatalog(rdfFolder, dbFile);	
+			jg.loadDb();
 		}
 	}
 	
