@@ -2,9 +2,7 @@ package org.josfranmc.gutenberg.catalog;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -32,48 +30,61 @@ public class JGutenbergCatalogTest {
 	}
 	
 	/**
-	 * Si el parámetro dbConfigFile es null, entonces lanzar excepción IllegalArgumentException
+	 * Si el parámetro dbConfigFile del método loadDb() es null, entonces lanzar excepción IllegalArgumentException
 	 */
-//	@Test(expected=IllegalArgumentException.class)
-//	public void givenDbConfigFileParameterWhenNullThenIllegalArgumentException() {
-//		File folder = new File("rdftest1");
-//		folder.mkdir();
-//		try {
-//			new JGutenbergCatalog("rdftest1");
-//		} catch (Exception e) {
-//			folder.delete();
-//			throw e;
-//		}
-//	}
+	@Test(expected=IllegalArgumentException.class)
+	public void loadDbWhenNullParameterThenIllegalArgumentException() {
+		JGutenbergCatalog jg = new JGutenbergCatalog("target/test-classes/rdftest");
+		jg.loadDb(null);
+	}
 
-//	@Test
-//	public void createDefaultDbTest() {
-//		File folder = new File("rdftest2");
-//		folder.mkdir();
-//		new JGutenbergCatalog("rdftest2");
-//		
-//		File database = new File("catalog");
-//		assertTrue(database.exists());
-//		
-//		folder.delete();
-//		database.delete();
-//	}
+	@Test
+	public void readRdfFilesTest() {
+		JGutenbergCatalog jg = new JGutenbergCatalog("target/test-classes/rdftest");
+		jg.readRdfFiles();
+		assertFalse(jg.getRdfCatalog().isEmpty());
+		
+		Book book = jg.getBook("10607");
+		
+		assertNotNull(book);
+		
+		assertEquals("Wrong Book Id", "10607", book.getId());
+		assertEquals("Wrong Book title", "The Real Mother Goose", book.getTitle());
+	}
+
+	@Test
+	public void loadDbTest() {
+		JGutenbergCatalog jg = new JGutenbergCatalog("target/test-classes/rdftest");
+		jg.loadDb("target/test-classes/db/hsql1_connection.properties");
+	}
 	
 	@Test
-	public void createDefaultDbTest() {
-
-		JGutenbergCatalog j = new JGutenbergCatalog("target/test-classes/rdftest");
-		
-		File database = new File("catalog");
-		assertTrue(database.exists());
-		
-		//j.createCatalog();
-		
+	public void loadDbWithDefaultDbTest() {
+		JGutenbergCatalog jg = new JGutenbergCatalog("target/test-classes/rdftest");
+		jg.loadDb();
+	}
 	
-		
-		for (File f : database.listFiles()) {
-			f.delete();
-		}
-		database.delete();
+	@Test(expected=IllegalArgumentException.class)
+	public void loadDbWithBadSettingFileTest() {
+		JGutenbergCatalog jg = new JGutenbergCatalog("target/test-classes/rdftest");
+		jg.loadDb("bad/path/setting.properties");
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void main1Test() {
+		String[] args = {"-r", "target/test-classes/rdftest", "-b"};
+		JGutenbergCatalog.main(args); 
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void main2Test() {
+		String[] args = {"-r", "-b"};
+		JGutenbergCatalog.main(args); 
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void main3Test() {
+		String[] args = {"-x", "-b"};
+		JGutenbergCatalog.main(args); 
 	}
 }
