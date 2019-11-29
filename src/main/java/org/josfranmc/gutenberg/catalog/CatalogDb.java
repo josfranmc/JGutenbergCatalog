@@ -77,7 +77,7 @@ public class CatalogDb {
 			this.connection = dbConnection.getConnection();
 			this.connection.setAutoCommit(false);
 		} catch (SQLException e) {
-			throw new GutenbergCatalogException(e.getMessage());
+			throw new IllegalStateException(e.getMessage());
 		}
 	}
 	
@@ -115,8 +115,11 @@ public class CatalogDb {
 	 */
 	public boolean isBookInDatabase(String id) {
 		boolean result = false;
-		PreparedStatement pstatement = null;
 		ResultSet resultSet = null;
+		if (this.selectStatament == null) {
+			createTableForBooks();
+			createStatementForSelect();
+		}
 		try {
 			this.selectStatament.setString(1, id);
 			resultSet = this.selectStatament.executeQuery();
@@ -129,9 +132,6 @@ public class CatalogDb {
 			try {
 				if (resultSet != null) {
 					resultSet.close();
-				}
-				if (pstatement != null) {
-					pstatement.close();
 				}
 			} catch (Exception e) {
 				log.error(e);
@@ -221,6 +221,9 @@ public class CatalogDb {
 		try {
 			if (this.insertStatament != null) {
 				this.insertStatament.close();
+			}
+			if (this.selectStatament != null) {
+				this.selectStatament.close();
 			}
 			if (this.connection != null) {
 				this.connection.commit();

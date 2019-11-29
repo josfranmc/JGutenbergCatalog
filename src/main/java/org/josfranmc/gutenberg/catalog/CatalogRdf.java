@@ -36,7 +36,7 @@ public class CatalogRdf {
 	 * Default constructor.
 	 * @param rdfCatalog a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
 	 */
-	CatalogRdf(File rdfFilesFolder) {
+	public CatalogRdf(File rdfFilesFolder) {
 		if (rdfFilesFolder == null || !rdfFilesFolder.exists()) {
 			throw new IllegalArgumentException("Invalid path to RDF container.");
 		}
@@ -57,7 +57,7 @@ public class CatalogRdf {
 					RdfFile rdfFile = new RdfFile(folder);
 					this.rdfCatalog.put(folder.getName(), rdfFile);
 				} catch (IllegalArgumentException e) {
-					log.error(e.getMessage());
+					log.warn("[WARN] File " + folder.getName() + " not read");
 				}
 			}
 		}
@@ -65,7 +65,7 @@ public class CatalogRdf {
 	}
 	
 	/**
-	 * Returns the <code>RdfFile</code> objects collection with which the object was initialized.
+	 * Returns the <code>RdfFile</code> objects collection.
 	 * @return a HashMap collection of <code>RdfFile</code> objects 
 	 */
 	public HashMap<String, RdfFile> getRdfCatalog() {
@@ -88,7 +88,7 @@ public class CatalogRdf {
 	public RdfFile getRdfFile(String idFile) {
 		RdfFile rdfFile = this.rdfCatalog.get(idFile);
 		if (rdfFile == null) {
-			rdfFile = new RdfFile(new File(idFile));
+			rdfFile = new RdfFile(new File(rdfFilesFolder.getAbsolutePath() + System.getProperty("file.separator") + idFile));
 		}
 		return rdfFile;
 	}

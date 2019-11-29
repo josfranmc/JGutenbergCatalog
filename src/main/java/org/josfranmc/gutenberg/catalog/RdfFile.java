@@ -1,7 +1,6 @@
 package org.josfranmc.gutenberg.catalog;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.jena.query.Query;
@@ -56,21 +55,20 @@ public class RdfFile {
 		this.filePath = filePath;
 		this.book = new Book();
 		this.book.setId(folder.getName());
+		queryFile();
 	}
 	
 	/**
-	 * Returns a <code>Book</code> object according to the RDF file this object represent.
-	 * @return a <code>Book</code> object
-	 * @see Book
+	 * Query the RDF file using SPARQL. The data retrivied are asigned to the <code>Book</code> object.
 	 */
-	public Book getBook() {
+	private void queryFile() {
 		try (InputStream is = FileManager.get().open(getFilePath())) {
 			Model model = ModelFactory.createDefaultModel();
 			model.read(is, "http://www.gutenberg.org/", "RDF/XML");
 			
 			Query query = QueryFactory.create(getQueryStatement());
 			QueryExecution qexec = QueryExecutionFactory.create(query, model);
-
+	
 			ResultSet results = qexec.execSelect();
 			while (results.hasNext()) {
 				QuerySolution qsol = results.nextSolution();
@@ -79,12 +77,18 @@ public class RdfFile {
 				book.setAuthor(getFieldValue(qsol, "author"));
 				book.setLanguage(getFieldValue(qsol, "language"));
 			}
-		} catch (IOException e) {
-			log.error("RDF file not found: " + filePath);
 		} catch (Exception e) {
 			log.error(e);
 		}
-		return book;
+	}
+	
+	/**
+	 * Returns a <code>Book</code> object according to the RDF file this object represent.
+	 * @return a <code>Book</code> object
+	 * @see Book
+	 */
+	public Book getBook() {
+		return this.book;
 	}
 	
 	private String getFieldValue(QuerySolution qsol, String field) {

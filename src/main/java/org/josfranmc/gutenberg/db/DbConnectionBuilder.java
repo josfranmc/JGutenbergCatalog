@@ -14,7 +14,12 @@ public class DbConnectionBuilder {
 	private Properties properties;
 
 	public DbConnectionBuilder() {
-
+		properties = new Properties();
+		properties.put("DbType", "HSQL");
+		properties.put("DatabaseDriver", "org.hsqldb.jdbcDriver");
+		properties.put("HSQL.url", "jdbc:hsqldb:file:catalog/gutenberg");
+		properties.put("HSQL.user", "SA");
+		properties.put("HSQL.password", "");
 	}
 	
 	/**
