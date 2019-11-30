@@ -1,7 +1,7 @@
 package org.josfranmc.gutenberg.catalog;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -55,6 +55,8 @@ public class JGutenbergCatalog {
 		}
 
 		this.catalogRdf = new CatalogRdf(path);
+		
+		this.catalogDb = new CatalogDb(getDbConnection(DB_DEFAULT));
 	}
 	
 	/**
@@ -64,44 +66,52 @@ public class JGutenbergCatalog {
 		this.catalogRdf.readFiles();
 	}
 	
-	public HashMap<String, RdfFile> getRdfCatalog() {
+	/**
+	 * Returns the collection that make up the book catalog.
+	 * @return the collection that make up the book catalog
+	 */
+	public Map<String, RdfFile> getRdfCatalog() {
 		return this.catalogRdf.getRdfCatalog();
 	}
 
 	/**
-	 * It loads the book catalog in a HSQL database.<br>
-	 * The database is located in a folder called <i>catalog</i> and its name is <i>gutenberg</i>.
+	 * Sets the database setting to use for load data.
+	 * @param dbConfigFile database setting file
 	 */
-	public void loadDb() {
-		loadDb(DB_DEFAULT);
+	public void setDatabase(String dbConfigFile) {
+		if (dbConfigFile == null) {
+			throw new IllegalArgumentException("Invalid null value for database setting file");
+		}
+		
+		this.catalogDb = new CatalogDb(getDbConnection(dbConfigFile));
 	}
 	
 	/**
-	 * It loads the book catalog in a database. You must indicate in a file the data to set up the database connection.<p>
+	 * It loads the book catalog in a database.<br>
 	 * If it hasn't done it before, the RDF files are read.<br>
 	 * It only loads new information. RDF files already loaded are ignored.
 	 * @param dbConfigFile file with data to set up the database connection
 	 */
-	public void loadDb(String dbConfigFile) {
-		if (dbConfigFile == null) {
-			throw new IllegalArgumentException("Invalid null value for database setting file");
-		}
-		catalogDb = new CatalogDb(getDbConnection(dbConfigFile));
-
-		if (catalogRdf.getRdfCatalog() == null || catalogRdf.getRdfCatalog().isEmpty()) {
+	public void loadDb() {
+		if (catalogRdf.getRdfCatalog().isEmpty()) {
 			catalogRdf.readFiles();
 		}
 		catalogDb.setRdfCatalog(catalogRdf.getRdfCatalog());
 		catalogDb.load();
 	}
 	
+	/**
+	 * Returns a <code>Book</code> object .
+	 * @param id book identifier
+	 * @return the book acording to the identifier that is passed
+	 */
 	public Book getBook(String id) {
 		return catalogRdf.getRdfFile(id).getBook();
 	}
 	
 	private DbConnection getDbConnection(String dbConfigFile) {
-		Properties properties = new Properties();
-		if (dbConfigFile == DB_DEFAULT) {
+		Properties properties = null;
+		if (dbConfigFile.equals(DB_DEFAULT)) {
 			properties = PropertiesFile.loadPropertiesFromResource(DB_DEFAULT);
 		} else {
 			File path = new File(dbConfigFile);
@@ -122,7 +132,7 @@ public class JGutenbergCatalog {
 			showHelp();
 		} else {
 			String rdfFolder = null;
-			String dbFile = DB_DEFAULT;
+			String dbFile = null;
 			for (int i = 0; i < args.length; i+=2) {
 				try {
 					if (args[i].equals("-r")) {
@@ -138,7 +148,10 @@ public class JGutenbergCatalog {
 			}
 
 			JGutenbergCatalog jg = new JGutenbergCatalog(rdfFolder);
-			jg.loadDb(dbFile);
+			if (dbFile != null) {
+				jg.setDatabase(dbFile);
+			}
+			jg.loadDb();
 		}
 	}
 	
@@ -146,8 +159,8 @@ public class JGutenbergCatalog {
 		log.info("");
 		log.info("Usage: java -jar JGutenbergCatalog [options]");
 		log.info("Options:");
-		log.info("   -r xxx (xxx type of files to download, default: txt)");
-		log.info("   -b xx  (xx  language of books to download, default: es)");
+		log.info("   -r xxx (xxx path to the RDF files folder)");
+		log.info("   -b xx  (xx  path to the database setting file)");
 		log.info("");
 		log.info("(only -h to show options list)");
 		log.info("");

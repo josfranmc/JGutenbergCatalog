@@ -47,12 +47,12 @@ public class RdfFile {
 		if (folder == null) {
 			throw new IllegalArgumentException("Invalid path to RDF file.");
 		}
-		String filePath = folder.getAbsolutePath() + FILE_SEPARATOR + FILE_PREFIX + folder.getName() + FILE_EXTENSION;
-		File file = new File(filePath);
+		String pathtoFile = folder.getAbsolutePath() + FILE_SEPARATOR + FILE_PREFIX + folder.getName() + FILE_EXTENSION;
+		File file = new File(pathtoFile);
 		if (!file.exists()) {
 			throw new IllegalArgumentException("Wrong rdf file. Id: " + folder.getName());
 		} 
-		this.filePath = filePath;
+		this.filePath = pathtoFile;
 		this.book = new Book();
 		this.book.setId(folder.getName());
 		queryFile();
@@ -67,15 +67,19 @@ public class RdfFile {
 			model.read(is, "http://www.gutenberg.org/", "RDF/XML");
 			
 			Query query = QueryFactory.create(getQueryStatement());
-			QueryExecution qexec = QueryExecutionFactory.create(query, model);
+			try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
 	
-			ResultSet results = qexec.execSelect();
-			while (results.hasNext()) {
-				QuerySolution qsol = results.nextSolution();
-				
-				book.setTitle(getFieldValue(qsol, "title").replaceAll("[\n\r]", ""));
-				book.setAuthor(getFieldValue(qsol, "author"));
-				book.setLanguage(getFieldValue(qsol, "language"));
+				ResultSet results = qexec.execSelect();
+				while (results.hasNext()) {
+					QuerySolution qsol = results.nextSolution();
+					
+					String title = getFieldValue(qsol, "title");
+					if (title != null) {
+						book.setTitle(title.replaceAll("[\n\r]", ""));
+					}
+					book.setAuthor(getFieldValue(qsol, "author"));
+					book.setLanguage(getFieldValue(qsol, "language"));
+				}
 			}
 		} catch (Exception e) {
 			log.error(e);
@@ -154,8 +158,11 @@ public class RdfFile {
 		if (filePath == null) {
 			if (other.filePath != null)
 				return false;
-		} else if (!filePath.equals(other.filePath))
-			return false;
+		} else {
+			if (!filePath.equals(other.filePath)) {
+				return false;
+			}
+		}
 		return true;
 	}
 }

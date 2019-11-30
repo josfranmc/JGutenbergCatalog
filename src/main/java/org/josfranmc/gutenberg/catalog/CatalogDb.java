@@ -9,7 +9,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.josfranmc.gutenberg.db.DbConnection;
@@ -46,14 +46,14 @@ public class CatalogDb {
 	/**
 	 * Collection of RDF files
 	 */
-	private HashMap<String, RdfFile> rdfCatalog;
+	private Map<String, RdfFile> rdfCatalog;
 	
 	
 	/**
 	 * @param rdfFiles a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
 	 * @param dbConnection database where to save the data about books
 	 */
-	public CatalogDb(HashMap<String, RdfFile> rdfCatalog, DbConnection dbConnection) {
+	public CatalogDb(Map<String, RdfFile> rdfCatalog, DbConnection dbConnection) {
 		if (rdfCatalog == null) {
 			throw new IllegalArgumentException("RDF collection is Null.");
 		}
@@ -94,9 +94,9 @@ public class CatalogDb {
 			createStatementForInsert();
 			createStatementForSelect();
 	
-			getRdfCatalog().forEach((bookId, RdfFile) -> {
+			getRdfCatalog().forEach((bookId, rdfFile) -> {
 				if (!isBookInDatabase(bookId)) {
-					Book book = RdfFile.getBook();
+					Book book = rdfFile.getBook();
 					saveBook(book);
 				}
 			});
@@ -144,7 +144,7 @@ public class CatalogDb {
 	 * Returns the <code>RdfFile</code> objects collection with which the object was initialized.
 	 * @return a <code>RdfFile</code> objects collection
 	 */
-	public HashMap<String, RdfFile> getRdfCatalog() {
+	public Map<String, RdfFile> getRdfCatalog() {
 		return this.rdfCatalog;
 	}
 	
@@ -152,7 +152,7 @@ public class CatalogDb {
 	 * Sets a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
 	 * @param rdfCatalog a <code>RdfFile</code> objects collection
 	 */
-	public void setRdfCatalog(HashMap<String, RdfFile> rdfCatalog) {
+	public void setRdfCatalog(Map<String, RdfFile> rdfCatalog) {
 		this.rdfCatalog = rdfCatalog;
 	}
 	

@@ -82,13 +82,19 @@ public class Book implements Serializable {
 		if (id == null) {
 			if (other.id != null)
 				return false;
-		} else if (!id.equals(other.id))
-			return false;
+		} else {
+			if (!id.equals(other.id)) {
+				return false;
+			}
+		}
 		if (title == null) {
 			if (other.title != null)
 				return false;
-		} else if (!title.equals(other.title))
-			return false;
+		} else { 
+			if (!title.equals(other.title)) {
+				return false;
+			}
+		}
 		return true;
 	}	
 }

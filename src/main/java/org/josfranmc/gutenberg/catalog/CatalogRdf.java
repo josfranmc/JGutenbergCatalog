@@ -5,6 +5,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -29,7 +30,7 @@ public class CatalogRdf {
 	/**
 	 * Collection of RDF files
 	 */
-	private HashMap<String, RdfFile> rdfCatalog;
+	private Map<String, RdfFile> rdfCatalog;
 
 	
 	/**
@@ -42,7 +43,7 @@ public class CatalogRdf {
 		}
 		this.rdfFilesFolder = rdfFilesFolder;
 
-		this.rdfCatalog = new HashMap<String, RdfFile>();
+		this.rdfCatalog = new HashMap<>();
 	}
 	
 	/**
@@ -68,7 +69,7 @@ public class CatalogRdf {
 	 * Returns the <code>RdfFile</code> objects collection.
 	 * @return a HashMap collection of <code>RdfFile</code> objects 
 	 */
-	public HashMap<String, RdfFile> getRdfCatalog() {
+	public Map<String, RdfFile> getRdfCatalog() {
 		return this.rdfCatalog;
 	}
 	
@@ -76,7 +77,7 @@ public class CatalogRdf {
 	 * Sets a HashMap collection of <code>RdfFile</code> objects that make up the Gutenberg catalog.
 	 * @param rdfCatalog a HashMap collection of <code>RdfFile</code> objects 
 	 */
-	public void setRdfCatalog(HashMap<String, RdfFile> rdfCatalog) {
+	public void setRdfCatalog(Map<String, RdfFile> rdfCatalog) {
 		this.rdfCatalog = rdfCatalog;
 	}
 	
