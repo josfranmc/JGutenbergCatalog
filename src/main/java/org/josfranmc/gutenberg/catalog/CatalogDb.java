@@ -98,7 +98,7 @@ public class CatalogDb {
 			this.connection = dbConnection.getConnection();
 			this.connection.setAutoCommit(false);
 		} catch (SQLException e) {
-			throw new IllegalStateException(e.getMessage());
+			throw new IllegalStateException("Error getting connection: " + e.getMessage());
 		}
 	}
 	
@@ -203,15 +203,15 @@ public class CatalogDb {
      	 		" ID varchar(10) PRIMARY KEY," + 
      	 		" author varchar(300) NULL, " + 
      	 		" title varchar(1000) NULL," + 
-     	 		" language varchar(3) NULL," +
+     	 		" language varchar(3) NULL" +
      	 		");");
        	 	log.info("BOOKS table created.");
 		} catch (SQLException e) {
-			log.info("Using the existing BOOKS table.");
+			log.error(e);
 		} finally {
         	try {
     		    if (statement != null) {
-    		     statement.close();
+    		    	statement.close();
     		    }
         	} catch (Exception e) {
         		log.error(e);
