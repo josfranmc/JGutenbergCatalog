@@ -56,7 +56,7 @@ public class CatalogRdf {
 	
 	/**
 	 * Default constructor.
-	 * @param rdfCatalog a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
+	 * @param rdfFilesFolder a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
 	 */
 	public CatalogRdf(File rdfFilesFolder) {
 		if (rdfFilesFolder == null || !rdfFilesFolder.exists()) {

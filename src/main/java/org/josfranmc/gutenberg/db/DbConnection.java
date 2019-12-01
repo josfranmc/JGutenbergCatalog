@@ -67,7 +67,7 @@ public abstract class DbConnection {
 	
 	/**
 	 * @return returns a <code>Connection</code> object to a database
-	 * @throws SQLException
+	 * @throws SQLException if there is any error getting the connection
 	 * @see Connection
 	 */
 	public Connection getConnection() throws SQLException {

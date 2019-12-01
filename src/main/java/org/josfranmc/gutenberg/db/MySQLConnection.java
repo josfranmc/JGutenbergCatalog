@@ -99,7 +99,7 @@ public final class MySQLConnection extends DbConnection {
 	
 	/**
 	 * @return returns a Connection object to a MySQL database
-	 * @throws SQLException
+	 * @throws SQLException if there is any error getting the connection
 	 * @see Connection
 	 * @see DbConnection
 	 */

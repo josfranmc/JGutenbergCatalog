@@ -56,7 +56,7 @@ public class DbConnectionBuilder {
 	 * Sets a <code>Properties</code> object with the setting to connect to a database. This setting will be used to configure the <code>DatabaseConnection</code> object that will
 	 * allow to get connections to database.
 	 * @param properties <code>Properties</code> object with setting params 
-	 * @throws IllegalArgumentException
+	 * @throws IllegalArgumentException if parameter is null
 	 * @return a reference to the <code>DatabaseConnectionBuilder</code> object that call this method
 	 */
 	public DbConnectionBuilder setSettingProperties(Properties properties) {

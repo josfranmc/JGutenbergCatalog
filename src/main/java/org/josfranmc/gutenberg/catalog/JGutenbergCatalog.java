@@ -42,8 +42,6 @@ import org.josfranmc.gutenberg.files.PropertiesFile;
  * Alternativaly, you can specify a setting file to use either a MySQL or a PostgresSQL database.
  * @author Jose Francisco Mena Ceca
  * @version 2.0
- * @see Catalog
- * @see DbConnection
  */
 public class JGutenbergCatalog {
 
@@ -111,7 +109,6 @@ public class JGutenbergCatalog {
 	 * It loads the book catalog in a database.<br>
 	 * If it hasn't done it before, the RDF files are read.<br>
 	 * It only loads new information. RDF files already loaded are ignored.
-	 * @param dbConfigFile file with data to set up the database connection
 	 */
 	public void loadDb() {
 		if (catalogRdf.getRdfCatalog().isEmpty()) {

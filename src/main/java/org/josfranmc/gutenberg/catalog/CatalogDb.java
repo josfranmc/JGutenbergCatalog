@@ -71,7 +71,7 @@ public class CatalogDb {
 	
 	
 	/**
-	 * @param rdfFiles a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
+	 * @param rdfCatalog a <code>RdfFile</code> objects collection that make up the Gutenberg catalog.
 	 * @param dbConnection database where to save the data about books
 	 */
 	public CatalogDb(Map<String, RdfFile> rdfCatalog, DbConnection dbConnection) {
