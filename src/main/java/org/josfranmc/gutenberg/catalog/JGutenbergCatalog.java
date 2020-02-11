@@ -25,7 +25,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.josfranmc.gutenberg.db.DbConnection;
 import org.josfranmc.gutenberg.db.DbConnectionBuilder;
 import org.josfranmc.gutenberg.files.PropertiesFile;
@@ -45,7 +46,7 @@ import org.josfranmc.gutenberg.files.PropertiesFile;
  */
 public class JGutenbergCatalog {
 
-	private static final Logger log = Logger.getLogger(JGutenbergCatalog.class);
+	private static final Logger log = LogManager.getLogger(JGutenbergCatalog.class);
 	
 	private static final String DB_DEFAULT = "db/DbConnection.properties";
 

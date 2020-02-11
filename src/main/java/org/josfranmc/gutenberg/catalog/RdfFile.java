@@ -34,7 +34,8 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.FileManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * It represents a RDF file about a book and allows to obtain its data.<br>
@@ -44,7 +45,7 @@ import org.apache.log4j.Logger;
  */
 public class RdfFile {
 
-	private static final Logger log = Logger.getLogger(RdfFile.class);
+	private static final Logger log = LogManager.getLogger(RdfFile.class);
 	
 	private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 	
