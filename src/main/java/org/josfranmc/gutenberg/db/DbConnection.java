@@ -26,7 +26,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * This class serves as template to define specific classes that serve to connect to databases.
@@ -35,7 +36,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class DbConnection {
 
-	private static final Logger log = Logger.getLogger(DbConnection.class);
+	private static final Logger log = LogManager.getLogger(DbConnection.class);
 	
 	private String urlDb;
 

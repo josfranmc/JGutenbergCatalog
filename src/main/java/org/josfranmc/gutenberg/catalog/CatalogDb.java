@@ -32,7 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.josfranmc.gutenberg.db.DbConnection;
 
 /**
@@ -47,7 +48,7 @@ import org.josfranmc.gutenberg.db.DbConnection;
  */
 public class CatalogDb {
 
-	private static final Logger log = Logger.getLogger(CatalogDb.class);
+	private static final Logger log = LogManager.getLogger(CatalogDb.class);
 
 	/**
 	 * Connection to the database where to save the data about books

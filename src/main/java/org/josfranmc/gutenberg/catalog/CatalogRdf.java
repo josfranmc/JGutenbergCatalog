@@ -28,7 +28,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * It allows to read the RDF files that make up the Gutenberg catalog.<p>
@@ -41,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 public class CatalogRdf {
 
-	private static final Logger log = Logger.getLogger(CatalogRdf.class);
+	private static final Logger log = LogManager.getLogger(CatalogRdf.class);
 
 	/**
 	 * The path to the folder that contains RDF files about books
