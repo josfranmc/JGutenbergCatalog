@@ -42,7 +42,7 @@ import org.josfranmc.gutenberg.files.PropertiesFile;
  * Setting data are loaded from a resource file which path is <i>db/DbConnection.properties</i>.<br>
  * Alternativaly, you can specify a setting file to use either a MySQL or a PostgresSQL database.
  * @author Jose Francisco Mena Ceca
- * @version 2.0
+ * @version 2.2
  */
 public class JGutenbergCatalog {
 
@@ -59,6 +59,11 @@ public class JGutenbergCatalog {
 	 * Catalog of RDF files
 	 */
 	private CatalogDb catalogDb;
+	
+	/**
+	 * Delete previous data in database
+	 */
+	private boolean resetDb;
 
 	
 	/**
@@ -77,6 +82,8 @@ public class JGutenbergCatalog {
 		this.catalogRdf = new CatalogRdf(path);
 		
 		this.catalogDb = new CatalogDb(getDbConnection(DB_DEFAULT));
+		
+		this.resetDb = false;
 	}
 	
 	/**
@@ -107,6 +114,14 @@ public class JGutenbergCatalog {
 	}
 	
 	/**
+	 * Sets if delete previous data in database
+	 * @param resetDb <i>true</i> for deleting previous data, <i>false</i> otherwise
+	 */
+	public void setResetDb(boolean resetDb) {
+		this.resetDb = resetDb;
+	}
+	
+	/**
 	 * It loads the book catalog in a database.<br>
 	 * If it hasn't done it before, the RDF files are read.<br>
 	 * It only loads new information. RDF files already loaded are ignored.
@@ -116,7 +131,7 @@ public class JGutenbergCatalog {
 			catalogRdf.readFiles();
 		}
 		catalogDb.setRdfCatalog(catalogRdf.getRdfCatalog());
-		catalogDb.load();
+		catalogDb.load(this.resetDb);
 	}
 	
 	/**
@@ -152,24 +167,36 @@ public class JGutenbergCatalog {
 		} else {
 			String rdfFolder = null;
 			String dbFile = null;
-			for (int i = 0; i < args.length; i+=2) {
+			boolean resetDb = false;
+			
+			int i = 0;
+			int step = 0;
+			while (i < args.length) {
 				try {
 					if (args[i].equals("-r")) {
 						rdfFolder = args[i+1];
+						step = 2;
 					} else if (args[i].equals("-b")) {
 						dbFile = args[i+1];
+						step = 2;
+					} else if (args[i].equals("-d")) {
+						resetDb = true;
+						step = 1;		
 					} else {
 						throw new IllegalArgumentException("Parameter " + args[i]);
 					}
 				} catch (ArrayIndexOutOfBoundsException a) {
 					throw new IllegalArgumentException("Parameter " + args[i]);
 				}
+				i+=step;
 			}
 
 			JGutenbergCatalog jg = new JGutenbergCatalog(rdfFolder);
+			jg.setResetDb(resetDb);
 			if (dbFile != null) {
 				jg.setDatabase(dbFile);
 			}
+			jg.setResetDb(resetDb);
 			jg.loadDb();
 		}
 	}
@@ -179,7 +206,8 @@ public class JGutenbergCatalog {
 		log.info("Usage: java -jar JGutenbergCatalog [options]");
 		log.info("Options:");
 		log.info("   -r xxx (xxx path to the RDF files folder)");
-		log.info("   -b xx  (xx  path to the database setting file)");
+		log.info("   -b xxx (xxx  path to the database setting file)");
+		log.info("   -d (delete previous data)");
 		log.info("");
 		log.info("(only -h to show options list)");
 		log.info("");

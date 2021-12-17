@@ -2,6 +2,7 @@ package org.josfranmc.gutenberg.catalog;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -13,7 +14,7 @@ import org.junit.Test;
 /**
  * Clase que implementa los test para probar los métodos de la clase CatalogDb
  * @author Jose Francisco Mena Ceca
- * @version 2.0
+ * @version 2.2
  */
 public class CatalogDbTest {
 
@@ -61,5 +62,21 @@ public class CatalogDbTest {
 		CatalogDb c = new CatalogDb(new HashMap<String, RdfFile>(), db);
 		
 		assertNotNull(c.getRdfCatalog());
+	}
+	
+	@Test
+	public void rdfCatalogIsNullTest() {
+		Properties properties = new Properties();
+		properties.put("DbType", "HSQL");
+		properties.put("DatabaseDriver", "org.hsqldb.jdbcDriver");
+		properties.put("HSQL.url", "jdbc:hsqldb:mem:createtest2");
+		properties.put("HSQL.user", "SA");
+		properties.put("HSQL.password", "");
+		
+		DbConnection db = new DbConnectionBuilder().setSettingProperties(properties).build();
+		CatalogDb c = new CatalogDb(db);
+		assertNull(c.getRdfCatalog());
+		c.load(false);
+		assertFalse(c.isBookInDatabase("123"));
 	}
 }

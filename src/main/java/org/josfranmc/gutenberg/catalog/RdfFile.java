@@ -33,7 +33,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.util.FileManager;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -41,7 +41,7 @@ import org.apache.logging.log4j.LogManager;
  * It represents a RDF file about a book and allows to obtain its data.<br>
  * It uses Apache Jena for quering data.
  * @author Jose Francisco Mena Ceca
- * @version 2.0
+ * @version 2.2
  */
 public class RdfFile {
 
@@ -75,6 +75,7 @@ public class RdfFile {
 			throw new IllegalArgumentException("Wrong rdf file. Id: " + folder.getName());
 		} 
 		this.filePath = pathtoFile;
+		
 		this.book = new Book();
 		this.book.setId(folder.getName());
 		queryFile();
@@ -84,7 +85,7 @@ public class RdfFile {
 	 * Query the RDF file using SPARQL. The data retrivied are asigned to the <code>Book</code> object.
 	 */
 	private void queryFile() {
-		try (InputStream is = FileManager.get().open(getFilePath())) {
+		try (InputStream is = RDFDataMgr.open(getFilePath())) {
 			Model model = ModelFactory.createDefaultModel();
 			model.read(is, "http://www.gutenberg.org/", "RDF/XML");
 			

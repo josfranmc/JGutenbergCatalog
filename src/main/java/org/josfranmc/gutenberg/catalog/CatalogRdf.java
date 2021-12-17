@@ -36,7 +36,7 @@ import org.apache.logging.log4j.LogManager;
  * The data is stored in memory as a <code>HashMap</code>. Each RDF file is stored as an <code>RdfFile</code> object, with key the file identifier.<br>
  * This identifier is the same as the book it represents.
  * @author Jose Francisco Mena Ceca
- * @version 2.0
+ * @version 2.2
  * @see RdfFile
  * @see Book
  */
@@ -73,7 +73,7 @@ public class CatalogRdf {
 	 * @see RdfFile
 	 */
 	public void readFiles() {
-		log.info("Processing RDF files... " + getCurrentTime());
+		log.info("[INFO] Processing RDF files... " + getCurrentTime());
 		for (File folder : this.rdfFilesFolder.listFiles()) {
 			if (!folder.getName().toLowerCase().contains("delete")) {
 				try {
@@ -84,7 +84,7 @@ public class CatalogRdf {
 				}
 			}
 		}
-		log.info("RDF files processed " + getCurrentTime());
+		log.info("[INFO] RDF files processed " + getCurrentTime());
 	}
 	
 	/**

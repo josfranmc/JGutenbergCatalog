@@ -41,7 +41,7 @@ import org.josfranmc.gutenberg.db.DbConnection;
  * Each <code>RdfFile</code> object is inserted in a table called <i>Books</i>. If this table doesn't exist in the database, it is created.<br>
  * You may get a collection of <code>RdfFiles</code> objects from a <code>CatalogRdf</code> object.
  * @author Jose Francisco Mena Ceca
- * @version 2.0
+ * @version 2.2
  * @see CatalogRdf
  * @see RdfFile
  * @see Book
@@ -79,7 +79,7 @@ public class CatalogDb {
 		if (rdfCatalog == null) {
 			throw new IllegalArgumentException("RDF collection is Null.");
 		}
-		this.rdfCatalog = rdfCatalog;
+		setRdfCatalog(rdfCatalog);
 
 		initializeDbConnection(dbConnection);
 	}
@@ -109,12 +109,17 @@ public class CatalogDb {
 	 * @see RdfFile
 	 * @see Book
 	 */
-	public void load() {
+	public void load(boolean resetDb) {
 		if (getRdfCatalog() != null && !getRdfCatalog().isEmpty()) {
-			log.info("Loading catalog in DB... " + getCurrentTime());
-			createTableForBooks();
+			log.info("[INFO] Loading catalog in DB... " + getCurrentTime());
+			boolean isNewTable = createTableForBooks();
 			createStatementForInsert();
 			createStatementForSelect();
+			
+			if (!isNewTable && resetDb) {
+				log.info("[INFO] Deleting previous data... " + getCurrentTime());
+				deletePreviousData();
+			}
 	
 			getRdfCatalog().forEach((bookId, rdfFile) -> {
 				if (!isBookInDatabase(bookId)) {
@@ -124,9 +129,9 @@ public class CatalogDb {
 			});
 			
 			commitAndClose();
-			log.info("Load complete " + getCurrentTime());
+			log.info("[INFO] Load complete " + getCurrentTime());
 		} else {
-			log.warn("Loading catalog in DB: No RDF catalog to process");
+			log.warn("[WARN] Cannot load catalog in DB: No RDF catalog to process");
 		}
 	}
 	
@@ -190,14 +195,15 @@ public class CatalogDb {
 			this.insertStatament.setString(4, book.getLanguage());
 			this.insertStatament.executeUpdate();
 		} catch (SQLIntegrityConstraintViolationException e) {
-			log.warn("SQLIntegrityConstraintViolationException: book " + book.getId());
+			log.warn("[WARN] SQLIntegrityConstraintViolationException: book " + book.getId());
 		} catch (SQLException e) {
-			log.warn("Error saving " + book.getId() + ". " + e.toString());
+			log.warn("[WARN] Error saving " + book.getId() + ". " + e.toString());
 		}
 	}
 
-	private void createTableForBooks() {
+	private boolean createTableForBooks() {
 		Statement statement = null;
+		boolean result = true;
 		try {
 			statement = this.connection.createStatement();
        	 	statement.executeUpdate("CREATE TABLE books (" + 
@@ -206,7 +212,31 @@ public class CatalogDb {
      	 		" title varchar(1000) NULL," + 
      	 		" language varchar(3) NULL" +
      	 		");");
-       	 	log.info("BOOKS table created.");
+       	 	log.info("[INFO] BOOKS table created.");
+		} catch (SQLException e) {
+			if (e.getSQLState().equalsIgnoreCase("42504")) {
+				log.warn("[INFO] BOOKS table already exists.");
+				result = false;
+			} else {
+				log.error(e);
+			}
+		} finally {
+        	try {
+    		    if (statement != null) {
+    		    	statement.close();
+    		    }
+        	} catch (Exception e) {
+        		log.error(e);
+        	}
+		}
+		return result;
+	}
+
+	private void deletePreviousData() {
+		Statement statement = null;
+		try {
+			statement = this.connection.createStatement();
+       	 	statement.executeUpdate("DELETE FROM BOOKS;");
 		} catch (SQLException e) {
 			log.error(e);
 		} finally {
