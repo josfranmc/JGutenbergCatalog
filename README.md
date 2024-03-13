@@ -22,11 +22,11 @@ will install the artifact in your local repository, being ready to be used as a 
 <dependency>
   <groupId>org.josfranmc.gutenberg</groupId>
   <artifactId>JGutenbergCatalog</artifactId>
-  <version>2.3</version>
+  <version>2.4</version>
 </dependency>
 ~~~
 
-When you build the project with Maven you get two jars in the target directory: _JGutenbergCatalog-2.3.jar_ and _JGutenbergCatalog-2.3-shaded.jar_. The first one is the standard jar of the project. The second one is an _uber_ jar with all necessary dependencies, which is suitable to use from command line.    
+When you build the project with Maven you get two jars in the target directory: _JGutenbergCatalog-2.4.jar_ and _JGutenbergCatalog-2.4-shaded.jar_. The first one is the standard jar of the project. The second one is an _uber_ jar with all necessary dependencies, which is suitable to use from command line.    
 
 Download the latest _uber_ jar from [Releases](https://github.com/josfranmc/JGutenbergCatalog/releases).
 
@@ -88,10 +88,10 @@ These are the options you can use as arguments:
  
 ---
 
-It is possible to run the program from the command line. To this purpose, you may use the _JGutenbergCatalog-2.3-shaded.jar_ package this way (the -r parameter is mandatory):
+It is possible to run the program from the command line. To this purpose, you may use the _JGutenbergCatalog-2.4-shaded.jar_ package this way (the -r parameter is mandatory):
 
 ~~~
-java -jar JGutenbergCatalog-2.3-shaded.jar -r "path/to/catalog/rdf" [-b "path/to/database/setting/file" -d]
+java -jar JGutenbergCatalog-2.4-shaded.jar -r "path/to/catalog/rdf" [-b "path/to/database/setting/file" -d]
 ~~~
 
 ## License
